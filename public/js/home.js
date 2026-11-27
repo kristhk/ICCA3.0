@@ -7,16 +7,23 @@
   const ARTS = data.artworks || [];
   const reduceMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
   const finePointer = matchMedia('(hover: hover) and (pointer: fine)').matches;
+  const fx = { burst() {} }; // efectos visuales (se activan en la sección 11)
   const notice = () => window.ICCA_toast && window.ICCA_toast(c.protect_notice || 'Obra protegida por derechos de autor.');
 
   const el = (tag, cls, text) => { const e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; };
   const meta = (a) => [a.year, a.category].filter(Boolean).join(' · ');
+  // Número de catálogo: el orden de la obra en la colección (el mismo del dashboard)
+  const num = (a) => String(ARTS.indexOf(a) + 1).padStart(2, '0');
 
   // ==========================================================
   // 1. INTRO TIPO CINE (solo la primera vez en la sesión)
   // ==========================================================
   const intro = $('intro');
-  function start() { document.body.classList.add('is-ready'); }
+  function start() {
+    document.body.classList.add('is-ready');
+    // el foco de la obra principal se enciende cuando la obra termina de "colgarse"
+    setTimeout(() => $('heroCard')?.classList.add('lit'), reduceMotion ? 0 : 1100);
+  }
   let seen = false;
   try { seen = sessionStorage.getItem('icca_intro') === '1'; } catch {}
   if (intro && c.intro_on !== false && !seen && !reduceMotion && !location.hash) {
@@ -98,12 +105,24 @@
       for (const en of entries) if (en.isIntersecting) { en.target.classList.add('in'); revealIO.unobserve(en.target); }
     }, { rootMargin: '0px 0px -8% 0px', threshold: 0.08 })
     : null;
+  // Focos de museo: la lámpara de cada obra se enciende cuando la obra entra en la vista
+  const lampIO = 'IntersectionObserver' in window
+    ? new IntersectionObserver((entries) => {
+      for (const en of entries) if (en.isIntersecting) { en.target.classList.add('lit'); lampIO.unobserve(en.target); }
+    }, { rootMargin: '0px 0px -15% 0px', threshold: 0.2 })
+    : null;
+  function lamps(root) {
+    (root || document).querySelectorAll('.work:not(.lit), .feature .art-card:not(.lit), .glow-frame:not(.lit)').forEach((n) => {
+      if (lampIO) lampIO.observe(n); else n.classList.add('lit');
+    });
+  }
   function reveal(root) {
     (root || document).querySelectorAll('.reveal-up:not(.in)').forEach((n, i) => {
       if (!revealIO) { n.classList.add('in'); return; }
       n.style.transitionDelay = `${Math.min(i % 4, 3) * 90}ms`; // efecto cascada
       revealIO.observe(n);
     });
+    lamps(root);
   }
 
   // ==========================================================
@@ -123,7 +142,7 @@
       if (glare) glare.style.opacity = '0';
     });
   }
-  tilt($('heroCard'), 16);
+  tilt($('heroCard'), 9); // la obra principal responde al cursor en 3D
 
   // Luz roja que sigue al mouse en la portada
   const hero = document.querySelector('.hero');
@@ -145,6 +164,7 @@
     });
   }
   document.querySelectorAll('.note, .contact-form, .channel').forEach(spotlight);
+  document.querySelectorAll('.note').forEach((n) => tilt(n, 6));
 
   // ==========================================================
   // 5. UNA OBRA (marco de vidrio + título)
@@ -165,7 +185,9 @@
     btn.append(img, hover);
     btn.addEventListener('click', () => window.ICCA_Viewer.open(list(), list().indexOf(a)));
     spotlight(btn);
+    tilt(btn, 7); // cada obra se inclina hacia el cursor
     const cap = el('figcaption', 'work-caption');
+    cap.dataset.n = num(a); // se muestra como "N.º 01" en la cédula (CSS)
     cap.append(el('span', 'work-title', a.title));
     if (meta(a)) cap.append(el('span', 'work-meta', meta(a)));
     fig.append(btn, cap);
@@ -197,9 +219,10 @@
         frame.addEventListener('click', () => window.ICCA_Viewer.open(feats, i));
         card.append(frame);
         media.append(card);
-        tilt(card, 6);
+        tilt(card, 7);
 
         const text = el('div', 'feature-text');
+        text.append(el('span', 'feature-num', 'N.º ' + num(a)));
         if (a.category) text.append(el('span', 'tag', a.category));
         text.append(el('h3', null, a.title));
         const m = [c.artist_name, a.year, a.dimensions].filter(Boolean).join(' · ');
@@ -318,16 +341,17 @@
       canvas.width = Math.round(r.width); canvas.height = Math.round(r.height);
       ctx.globalCompositeOperation = 'source-over';
       const g = ctx.createLinearGradient(0, 0, canvas.width, canvas.height);
-      g.addColorStop(0, '#1c070b'); g.addColorStop(1, '#0b0304');
+      g.addColorStop(0, '#3a322b'); g.addColorStop(1, '#241f1a'); // velo café carbón
       ctx.fillStyle = g; ctx.fillRect(0, 0, canvas.width, canvas.height);
-      // textura de pinceladas
-      ctx.strokeStyle = 'rgba(139,0,0,0.12)'; ctx.lineWidth = 2;
+      // textura de pinceladas secas, color arena
+      ctx.strokeStyle = 'rgba(179,154,130,0.14)'; ctx.lineWidth = 2;
       for (let i = 0; i < 80; i++) {
         const x = Math.random() * canvas.width, y = Math.random() * canvas.height;
         ctx.beginPath(); ctx.moveTo(x, y); ctx.lineTo(x + 40 + Math.random() * 80, y - 20 - Math.random() * 40); ctx.stroke();
       }
-      ctx.fillStyle = 'rgba(200, 30, 45, 0.85)';
-      ctx.font = `800 ${Math.max(14, canvas.width / 30)}px Montserrat, sans-serif`;
+      ctx.fillStyle = 'rgba(201, 183, 163, 0.9)';
+      ctx.font = `600 ${Math.max(13, canvas.width / 34)}px Manrope, sans-serif`;
+      if ('letterSpacing' in ctx) ctx.letterSpacing = '0.25em';
       ctx.textAlign = 'center';
       ctx.fillText('✦  DESLIZA AQUÍ  ✦', canvas.width / 2, canvas.height / 2);
     }
@@ -360,7 +384,10 @@
     canvas.addEventListener('pointerdown', (e) => { last = point(e); erase(last); });
     canvas.addEventListener('pointermove', (e) => {
       // con mouse basta pasar el cursor; con el dedo hay que arrastrar
-      if (e.pointerType === 'mouse' || e.buttons) erase(point(e));
+      if (e.pointerType === 'mouse' || e.buttons) {
+        erase(point(e));
+        if (strokes % 4 === 0) fx.burst(e.clientX, e.clientY, 3); // chispas al quitar el velo
+      }
     });
     canvas.addEventListener('pointerleave', () => { last = null; });
     $('revealAll')?.addEventListener('click', revealAll);
@@ -425,7 +452,176 @@
   reveal(document);
 
   // ==========================================================
-  // 11. PROTECCIÓN DE IMÁGENES
+  // 11. AMBIENTE DE MUSEO NOCTURNO (portada y galería)
+  //     Linterna que sigue al cursor, motas de polvo en la luz, chispas al
+  //     hacer clic, cursor de museo, paralaje del fondo y de la portada,
+  //     franjas que aceleran con el scroll y botones "magnéticos".
+  // ==========================================================
+  const isHome = document.body.classList.contains('page-home');
+  if ((isHome || document.body.classList.contains('page-gallery')) && !reduceMotion) {
+    const bg = document.querySelector('.bg-animated');
+    const anchor = document.querySelector('.grain') || bg;
+    const insert = (node) => { node.setAttribute('aria-hidden', 'true'); if (anchor) anchor.after(node); else document.body.prepend(node); };
+
+    const light = finePointer ? el('div', 'room-light') : null;
+    const motas = el('canvas', 'motas');
+    insert(motas);
+    if (light) insert(light);
+
+    // --- Motas de polvo ---
+    const ctx = motas.getContext('2d');
+    let W = 0, H = 0;
+    function size() {
+      const dpr = Math.min(devicePixelRatio || 1, 1.5);
+      W = innerWidth; H = innerHeight;
+      motas.width = Math.round(W * dpr); motas.height = Math.round(H * dpr);
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    }
+    size();
+    addEventListener('resize', size);
+    const rnd = (a, b) => a + Math.random() * (b - a);
+    const P = Array.from({ length: matchMedia('(max-width: 760px)').matches ? 24 : 56 }, () => ({
+      x: rnd(0, W), y: rnd(0, H), r: rnd(0.5, 1.8), vy: rnd(-0.1, -0.32), ph: rnd(0, 6.28), sw: rnd(0.1, 0.4), a: rnd(0.12, 0.45),
+    }));
+
+    // --- Chispas doradas (al hacer clic en la sala o al rascar el lienzo) ---
+    const B = [];
+    fx.burst = (x, y, n = 28) => {
+      for (let i = 0; i < n && B.length < 320; i++) {
+        const ang = rnd(0, 6.2832), sp = rnd(0.6, 3.4), life = rnd(40, 90);
+        B.push({ x, y, vx: Math.cos(ang) * sp, vy: Math.sin(ang) * sp - 0.6, r: rnd(1, 2.8), life, max: life });
+      }
+    };
+    const NOT_SPARK = 'a, button, input, textarea, select, label, canvas, .work-frame, .art-frame, .g-frame, .viewer, .g-modal, .toolbar-container';
+    addEventListener('pointerdown', (e) => {
+      if (e.button !== 0 || e.target.closest(NOT_SPARK)) return;
+      fx.burst(e.clientX, e.clientY);
+    });
+
+    // --- Cursor de museo (anillo que sigue al mouse) ---
+    const ring = finePointer ? el('div', 'cursor-ring') : null;
+    let ringLabel = null;
+    if (ring) {
+      ring.setAttribute('aria-hidden', 'true');
+      ringLabel = el('span');
+      ring.append(ringLabel);
+      document.body.append(ring);
+      addEventListener('pointerover', (e) => {
+        const t = e.target;
+        ring.classList.remove('is-art', 'is-link');
+        if (t.closest('.g-frame')) { ring.classList.add('is-art'); ringLabel.textContent = 'Arrastra'; }
+        else if (t.closest('.scratch:not(.is-revealed)')) { ring.classList.add('is-art'); ringLabel.textContent = 'Desliza'; }
+        else if (t.closest('.work-frame, .art-frame, .scratch')) { ring.classList.add('is-art'); ringLabel.textContent = 'Ver'; }
+        else if (t.closest('a, button, .chip, input, textarea, select, label')) ring.classList.add('is-link');
+      });
+      addEventListener('pointerdown', () => ring.classList.add('is-down'));
+      addEventListener('pointerup', () => ring.classList.remove('is-down'));
+    }
+
+    // --- Cursor (suavizado) ---
+    let mx = W * 0.6, my = H * 0.4, cx = mx, cy = my, rx = mx, ry = my;
+    if (finePointer) {
+      addEventListener('pointermove', (e) => {
+        if (e.pointerType !== 'mouse') return;
+        mx = e.clientX; my = e.clientY;
+        light.classList.add('on'); ring.classList.add('on');
+      }, { passive: true });
+      document.documentElement.addEventListener('mouseleave', () => {
+        if (!document.body.classList.contains('lights-off')) light.classList.remove('on');
+        ring.classList.remove('on');
+      });
+    }
+
+    // --- Elementos que reaccionan al scroll y al mouse ---
+    const zone = document.querySelector('.marquee-zone');
+    const tracks = [...document.querySelectorAll('.marquee-track')];
+    const feats = [...document.querySelectorAll('.feature')].map((f) => ({ f, media: f.querySelector('.feature-media'), text: f.querySelector('.feature-text') }));
+    const heads = [...document.querySelectorAll('.page-home .section-head')];
+    const heroContent = document.querySelector('.hero-content'), heroVisual = document.querySelector('.hero-visual');
+    let lastY = scrollY, vel = 0, lastRate = 1, lastSkew = 0, lastParallaxY = null;
+
+    function frame(t) {
+      // cursor, linterna y paralaje del fondo
+      cx += (mx - cx) * 0.08; cy += (my - cy) * 0.08;
+      rx += (mx - rx) * 0.25; ry += (my - ry) * 0.25;
+      if (light) { light.style.setProperty('--lx', cx.toFixed(1) + 'px'); light.style.setProperty('--ly', cy.toFixed(1) + 'px'); }
+      if (ring) ring.style.translate = `${rx.toFixed(1)}px ${ry.toFixed(1)}px`;
+      if (finePointer) {
+        const nx = cx / W - 0.5, ny = cy / H - 0.5;
+        if (bg) { bg.style.setProperty('--bx', (nx * -28).toFixed(2)); bg.style.setProperty('--by', (ny * -20).toFixed(2)); }
+        // portada en capas: el texto y la obra se mueven en direcciones opuestas
+        if (scrollY < H) {
+          if (heroContent) heroContent.style.translate = `${(nx * -16).toFixed(1)}px ${(ny * -10).toFixed(1)}px`;
+          if (heroVisual) heroVisual.style.translate = `${(nx * 26).toFixed(1)}px ${(ny * 18).toFixed(1)}px`;
+        }
+      }
+
+      // motas: suben despacio, se apartan del cursor y brillan más cerca de la luz
+      ctx.clearRect(0, 0, W, H);
+      for (const p of P) {
+        p.y += p.vy; p.x += Math.sin(t * 0.0005 + p.ph) * p.sw * 0.35;
+        if (p.y < -10) { p.y = H + 10; p.x = rnd(0, W); }
+        if (p.x < -10) p.x = W + 10; else if (p.x > W + 10) p.x = -10;
+        const d = finePointer ? Math.hypot(p.x - cx, p.y - cy) : 999;
+        if (d < 120 && d > 0) { p.x += ((p.x - cx) / d) * 0.6; p.y += ((p.y - cy) / d) * 0.6; }
+        const near = finePointer ? Math.max(0, 1 - d / 300) : 0;
+        const alpha = p.a * (0.55 + 0.45 * Math.sin(t * 0.0014 + p.ph)) + near * 0.5;
+        ctx.fillStyle = `rgba(255, 226, 182, ${alpha.toFixed(3)})`;
+        ctx.beginPath(); ctx.arc(p.x, p.y, p.r + near * 1.2, 0, 6.2832); ctx.fill();
+      }
+      // chispas
+      for (let i = B.length - 1; i >= 0; i--) {
+        const s = B[i];
+        s.x += s.vx; s.y += s.vy; s.vx *= 0.96; s.vy = s.vy * 0.96 - 0.012;
+        if (--s.life <= 0) { B.splice(i, 1); continue; }
+        const k = s.life / s.max;
+        ctx.fillStyle = `rgba(244, 210, 140, ${(k * 0.95).toFixed(3)})`;
+        ctx.beginPath(); ctx.arc(s.x, s.y, s.r * (0.5 + k), 0, 6.2832); ctx.fill();
+      }
+
+      // franjas: aceleran y se inclinan con la velocidad del scroll
+      const dy = scrollY - lastY; lastY = scrollY;
+      vel += (dy - vel) * 0.12;
+      const rate = 1 + Math.min(4, Math.abs(vel) * 0.35);
+      if (Math.abs(rate - lastRate) > 0.03) { lastRate = rate; tracks.forEach((tr) => tr.getAnimations().forEach((a) => { a.playbackRate = rate; })); }
+      const skew = Math.max(-8, Math.min(8, vel * -0.4));
+      if (zone && Math.abs(skew - lastSkew) > 0.1) { lastSkew = skew; zone.style.setProperty('--skew', skew.toFixed(2) + 'deg'); }
+
+      if (scrollY !== lastParallaxY) {
+        lastParallaxY = scrollY;
+        // obras destacadas: la obra y su texto se desplazan a distinta velocidad
+        for (const { f, media, text } of feats) {
+          const r = f.getBoundingClientRect();
+          if (r.bottom < -200 || r.top > H + 200) continue;
+          const k = (r.top + r.height / 2 - H / 2) / H;
+          if (media) media.style.translate = `0 ${(k * -46).toFixed(1)}px`;
+          if (text) text.style.translate = `0 ${(k * 30).toFixed(1)}px`;
+        }
+        // números de sala gigantes: flotan a otra velocidad que el título
+        for (const h of heads) {
+          const r = h.getBoundingClientRect();
+          if (r.bottom < -300 || r.top > H + 300) continue;
+          h.style.setProperty('--py', ((r.top - H / 2) * 0.1).toFixed(1));
+        }
+      }
+      requestAnimationFrame(frame);
+    }
+    requestAnimationFrame(frame);
+
+    // Botones magnéticos: se acercan levemente al cursor
+    if (finePointer) {
+      document.querySelectorAll('.btn-primary, .btn-ghost, .nav-cta, .to-top, .tool-btn').forEach((b) => {
+        b.addEventListener('pointermove', (e) => {
+          const r = b.getBoundingClientRect();
+          b.style.translate = `${((e.clientX - r.left - r.width / 2) * 0.18).toFixed(1)}px ${((e.clientY - r.top - r.height / 2) * 0.3).toFixed(1)}px`;
+        });
+        b.addEventListener('pointerleave', () => { b.style.translate = ''; });
+      });
+    }
+  }
+
+  // ==========================================================
+  // 12. PROTECCIÓN DE IMÁGENES
   // ==========================================================
   // No impide una captura de pantalla (nada lo hace), pero evita "Guardar imagen como..." y arrastrar.
   document.addEventListener('contextmenu', (e) => {

@@ -3,9 +3,10 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="theme-color" content="#0b0b0b">
+  <meta name="theme-color" content="#0A0807">
   <!--SEO-->
-  <link rel="preload" href="/fonts/montserrat.woff" as="font" type="font/woff" crossorigin>
+  <link rel="preload" href="/fonts/manrope.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="/fonts/cormorant-garamond.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="stylesheet" href="/css/site.css">
   <link rel="stylesheet" href="/css/galeria.css">
 </head>
@@ -48,6 +49,9 @@
     </button>
     <button class="tool-btn" id="btnGrid" type="button" aria-pressed="false">
       <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg> <span class="hide-sm">Ordenar en grilla</span><span class="show-sm">Grilla</span>
+    </button>
+    <button class="tool-btn" id="btnLamp" type="button" aria-pressed="false" hidden>
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M9 2h6l-1 7h-4z"/><path d="M10 9v11a2 2 0 0 0 4 0V9"/><path d="M12 13v2"/></svg> Linterna
     </button>
     <label class="tool-select" id="filterWrap" hidden>
       <span class="sr-only">Filtrar por técnica</span>

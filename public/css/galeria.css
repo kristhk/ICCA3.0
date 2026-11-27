@@ -1,212 +1,328 @@
 /* =========================================================
-   GALERÍA — Lienzo libre (diseño original del proyecto)
-   Marcos dorados que se pueden arrastrar, esparcir u ordenar.
+   GALERÍA — Sala barroca nocturna
+   Muro negro con luces ocres que se desplazan lentamente,
+   marcos dorados con ornamentos y una lámpara de museo sobre
+   cada obra. Las obras se pueden mover, esparcir u ordenar.
    Se carga DESPUÉS de site.css (usa sus colores y fuentes).
+   IMPORTANTE: el padding (8px 8px 12px) y el borde (4px) de .g-frame
+   y la altura de .g-caption los usa galeria.js (frameH) para acomodar
+   las obras. Las molduras doradas se dibujan con box-shadow (fuera de
+   la caja), así que no cambian esas medidas.
    ========================================================= */
 
-:root { --oro: #d4af37; --oro-claro: #f3e5ab; }
+:root {
+  --negro-museo: #0A0807;
+  --ocre: #C2893A;
+  --ocre-claro: #E3B969;
+  --oro-claro: #F4D998;
+  --oro: #B8862F;
+  --oro-oscuro: #5E3F12;
+  /* Moldura del marco: anillos dorados y filetes oscuros alrededor del borde */
+  --molduras:
+    0 0 0 2px #241606,
+    0 0 0 5px #C89A4B,
+    0 0 0 6px #6E4A17,
+    0 0 0 9px #A27532,
+    0 0 0 10px #241606;
+  /* Esquinas barrocas (volutas doradas) */
+  --esq-1: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cg fill='none' stroke-linecap='round'%3E%3Cg stroke='%23241606' stroke-width='3.4'%3E%3Cpath d='M3 30C3 14 14 3 30 3'/%3E%3Cpath d='M8 30C8 20 12 14 18 12c4-1 6 2 4 5-2 2-5 1-5-1'/%3E%3Cpath d='M30 8C20 8 14 12 12 18c-1 4 2 6 5 4 2-2 1-5-1-5'/%3E%3C/g%3E%3Cg stroke='%23E3B969' stroke-width='1.6'%3E%3Cpath d='M3 30C3 14 14 3 30 3'/%3E%3Cpath d='M8 30C8 20 12 14 18 12c4-1 6 2 4 5-2 2-5 1-5-1'/%3E%3Cpath d='M30 8C20 8 14 12 12 18c-1 4 2 6 5 4 2-2 1-5-1-5'/%3E%3C/g%3E%3C/g%3E%3Ccircle cx='6' cy='6' r='3.2' fill='%23F4D998' stroke='%23241606'/%3E%3C/svg%3E");
+  --esq-2: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cg transform='rotate(90 16 16)'%3E%3Cg fill='none' stroke-linecap='round'%3E%3Cg stroke='%23241606' stroke-width='3.4'%3E%3Cpath d='M3 30C3 14 14 3 30 3'/%3E%3Cpath d='M8 30C8 20 12 14 18 12c4-1 6 2 4 5-2 2-5 1-5-1'/%3E%3Cpath d='M30 8C20 8 14 12 12 18c-1 4 2 6 5 4 2-2 1-5-1-5'/%3E%3C/g%3E%3Cg stroke='%23E3B969' stroke-width='1.6'%3E%3Cpath d='M3 30C3 14 14 3 30 3'/%3E%3Cpath d='M8 30C8 20 12 14 18 12c4-1 6 2 4 5-2 2-5 1-5-1'/%3E%3Cpath d='M30 8C20 8 14 12 12 18c-1 4 2 6 5 4 2-2 1-5-1-5'/%3E%3C/g%3E%3C/g%3E%3Ccircle cx='6' cy='6' r='3.2' fill='%23F4D998' stroke='%23241606'/%3E%3C/g%3E%3C/svg%3E");
+  --esq-3: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cg transform='rotate(180 16 16)'%3E%3Cg fill='none' stroke-linecap='round'%3E%3Cg stroke='%23241606' stroke-width='3.4'%3E%3Cpath d='M3 30C3 14 14 3 30 3'/%3E%3Cpath d='M8 30C8 20 12 14 18 12c4-1 6 2 4 5-2 2-5 1-5-1'/%3E%3Cpath d='M30 8C20 8 14 12 12 18c-1 4 2 6 5 4 2-2 1-5-1-5'/%3E%3C/g%3E%3Cg stroke='%23E3B969' stroke-width='1.6'%3E%3Cpath d='M3 30C3 14 14 3 30 3'/%3E%3Cpath d='M8 30C8 20 12 14 18 12c4-1 6 2 4 5-2 2-5 1-5-1'/%3E%3Cpath d='M30 8C20 8 14 12 12 18c-1 4 2 6 5 4 2-2 1-5-1-5'/%3E%3C/g%3E%3C/g%3E%3Ccircle cx='6' cy='6' r='3.2' fill='%23F4D998' stroke='%23241606'/%3E%3C/g%3E%3C/svg%3E");
+  --esq-4: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cg transform='rotate(270 16 16)'%3E%3Cg fill='none' stroke-linecap='round'%3E%3Cg stroke='%23241606' stroke-width='3.4'%3E%3Cpath d='M3 30C3 14 14 3 30 3'/%3E%3Cpath d='M8 30C8 20 12 14 18 12c4-1 6 2 4 5-2 2-5 1-5-1'/%3E%3Cpath d='M30 8C20 8 14 12 12 18c-1 4 2 6 5 4 2-2 1-5-1-5'/%3E%3C/g%3E%3Cg stroke='%23E3B969' stroke-width='1.6'%3E%3Cpath d='M3 30C3 14 14 3 30 3'/%3E%3Cpath d='M8 30C8 20 12 14 18 12c4-1 6 2 4 5-2 2-5 1-5-1'/%3E%3Cpath d='M30 8C20 8 14 12 12 18c-1 4 2 6 5 4 2-2 1-5-1-5'/%3E%3C/g%3E%3C/g%3E%3Ccircle cx='6' cy='6' r='3.2' fill='%23F4D998' stroke='%23241606'/%3E%3C/g%3E%3C/svg%3E");
+  /* Damasco barroco del muro (muy tenue) */
+  --damasco: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='180' viewBox='0 0 140 180'%3E%3Cg fill='none' stroke='%23C2893A' stroke-opacity='.09' stroke-width='1.2'%3E%3Cpath d='M70 22C50 44 50 66 70 88 90 66 90 44 70 22Z'/%3E%3Cpath d='M70 88C38 76 26 104 48 116c11 6 20-5 13-12'/%3E%3Cpath d='M70 88c32-12 44 16 22 28-11 6-20-5-13-12'/%3E%3Cpath d='M70 88v66'/%3E%3Cpath d='M70 130c-16-6-24 10-13 17M70 130c16-6 24 10 13 17'/%3E%3Ccircle cx='70' cy='12' r='3'/%3E%3Cpath d='M0 0c12 22 12 34 0 46M140 0c-12 22-12 34 0 46M0 180c12-22 12-34 0-46M140 180c-12-22-12-34 0-46'/%3E%3C/g%3E%3C/svg%3E");
+}
 .show-sm { display: none; }
 
 .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
 
-/* La barra de arriba siempre sólida en la galería */
-.page-gallery .topbar { background: rgba(14, 14, 14, 0.88); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); padding-block: 14px; border-bottom-color: rgba(255, 255, 255, 0.07); box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5); }
+/* ---------- La sala: negro con luces ocres que se mueven lentamente ---------- */
+.page-gallery { background: var(--negro-museo); }
+.page-gallery::before {
+  content: ''; position: fixed; inset: -25%; z-index: -2; pointer-events: none;
+  background:
+    radial-gradient(circle at 20% 30%, rgba(194, 137, 58, 0.30), transparent 22%),
+    radial-gradient(circle at 78% 24%, rgba(176, 110, 40, 0.24), transparent 20%),
+    radial-gradient(circle at 60% 74%, rgba(194, 137, 58, 0.22), transparent 24%),
+    radial-gradient(circle at 32% 80%, rgba(96, 66, 105, 0.26), transparent 22%),
+    radial-gradient(circle at 88% 70%, rgba(150, 92, 36, 0.18), transparent 18%);
+  animation: luces-ocre 40s ease-in-out infinite alternate;
+}
+@keyframes luces-ocre {
+  0% { transform: translate(0, 0) rotate(0deg); }
+  50% { transform: translate(4%, -3%) rotate(5deg); }
+  100% { transform: translate(-3%, 2%) rotate(-4deg); }
+}
+/* viñeta: los bordes de la sala se pierden en la oscuridad */
+.page-gallery::after {
+  content: ''; position: fixed; inset: 0; z-index: -1; pointer-events: none;
+  background: radial-gradient(ellipse 80% 75% at 50% 45%, transparent 35%, rgba(0, 0, 0, 0.72) 100%);
+}
 
-/* Línea roja que marca el límite de la barra (las obras no pueden pasar arriba de ella) */
+/* Barra superior oscura */
+.page-gallery .topbar {
+  color: var(--hueso); --acento: var(--ocre-claro);
+  background: rgba(10, 8, 7, 0.88); border-bottom-color: transparent;
+}
+@media (max-width: 860px) {
+  .page-gallery .menu { background: #120D0A; color: var(--hueso); --acento: var(--ocre-claro); border-bottom-color: rgba(227, 185, 105, 0.16); }
+  .page-gallery .menu a { border-bottom-color: rgba(243, 238, 229, 0.08); }
+  .page-gallery .menu .menu-contact-mobile { color: var(--ocre-claro); }
+}
+
+/* Línea que marca el límite de la barra (las obras no pueden pasar arriba de ella) */
 .nav-boundary-line {
-  position: fixed; top: 76px; left: 0; right: 0; height: 2px; z-index: 40; pointer-events: none;
-  background: linear-gradient(90deg, transparent, rgba(139, 0, 0, 0.55), transparent);
+  position: fixed; top: 72px; left: 0; right: 0; height: 1px; z-index: 40; pointer-events: none;
+  background: linear-gradient(90deg, transparent, rgba(227, 185, 105, 0.4), transparent);
 }
 
-/* ---------- Lienzo ---------- */
-.gallery-viewport {
-  position: relative; width: 100%; min-height: 100vh;
-  background: radial-gradient(circle at 50% 15%, #2a161a 0%, #0d0d0d 62%);
-  background-attachment: fixed;
-  overflow: hidden;
-}
+/* ---------- Muro con damasco ---------- */
+.gallery-viewport { position: relative; width: 100%; min-height: 100vh; overflow: hidden; }
+.gallery-viewport::before { content: ''; position: absolute; inset: 0; pointer-events: none; background: var(--damasco); }
 #artContainer { position: absolute; inset: 0; z-index: 1; } /* crea su propia capa: las obras nunca tapan la barra */
 
 /* Aviso de uso */
 .instruction-banner {
-  position: fixed; top: 96px; left: 50%; transform: translateX(-50%); z-index: 45;
-  display: flex; align-items: center; gap: 8px; white-space: nowrap;
-  font: 600 0.78rem var(--font); color: var(--oro-claro);
-  background: rgba(0, 0, 0, 0.78); backdrop-filter: blur(10px);
-  border: 1px solid rgba(212, 175, 55, 0.35); border-radius: 999px; padding: 8px 18px;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.6); pointer-events: none;
+  position: fixed; top: 92px; left: 50%; transform: translateX(-50%); z-index: 45;
+  display: flex; align-items: center; gap: 10px; white-space: nowrap;
+  font: 500 0.72rem var(--font); letter-spacing: 0.06em; color: var(--hueso);
+  background: rgba(16, 12, 10, 0.94); border: 1px solid rgba(227, 185, 105, 0.32); padding: 9px 18px;
+  box-shadow: 0 10px 30px -14px rgba(0, 0, 0, 0.9); pointer-events: none;
   transition: opacity 0.8s, transform 0.8s;
 }
-.instruction-banner.gone { opacity: 0; transform: translate(-50%, -12px); }
+.instruction-banner svg { color: var(--ocre-claro); }
+.instruction-banner.gone { opacity: 0; transform: translate(-50%, -10px); }
 
-/* ---------- Marco dorado de cada obra ---------- */
+/* ---------- Marco barroco de cada obra ---------- */
 .g-frame {
   position: absolute; top: 0; left: 0;
   width: var(--fw, 180px);
   padding: 8px 8px 12px;
-  background: linear-gradient(145deg, #2b2219, #17110c);
-  border: 4px solid #a67c1e;
-  border-image: linear-gradient(to bottom right, #d4af37, #59410f, #e6ca65, #3b2b0a) 1;
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.8), 0 0 10px rgba(139, 0, 0, 0.2);
+  /* paspartú de terciopelo oscuro */
+  background: radial-gradient(ellipse 90% 60% at 50% 0%, #3A2620, #1A110D 80%);
+  border: 4px solid var(--oro);
+  border-image: linear-gradient(135deg, #F4D998, #A8762A 30%, #F0CE7E 52%, #7A5119 75%, #E2B866) 1;
+  box-shadow: var(--molduras), 0 24px 40px -14px rgba(0, 0, 0, 0.9);
   cursor: grab; touch-action: none; user-select: none; -webkit-user-select: none;
   transform: rotate(var(--rot, 0deg));
-  transition: transform 0.2s cubic-bezier(.2, 0, .1, 1), box-shadow 0.25s, filter 0.3s;
+  transition: transform 0.2s cubic-bezier(.2, 0, .1, 1), box-shadow 0.3s, scale 0.45s var(--ease);
   will-change: transform, left, top;
 }
 /* cuando se esparcen u ordenan, se deslizan suavemente a su nuevo lugar */
-.g-frame.moving { transition: left 0.9s cubic-bezier(.2, .8, .2, 1), top 0.9s cubic-bezier(.2, .8, .2, 1), transform 0.9s cubic-bezier(.2, .8, .2, 1), box-shadow 0.25s; }
-.g-frame:hover { box-shadow: 0 15px 35px rgba(139, 0, 0, 0.45), 0 0 18px rgba(212, 175, 55, 0.35); filter: brightness(1.08); }
-.g-frame:focus-visible { outline: 2px solid var(--oro); outline-offset: 6px; }
+.g-frame.moving { transition: left 0.9s cubic-bezier(.2, .8, .2, 1), top 0.9s cubic-bezier(.2, .8, .2, 1), transform 0.9s cubic-bezier(.2, .8, .2, 1), box-shadow 0.3s; }
+@media (hover: hover) {
+  .g-frame:hover { scale: 1.04; box-shadow: var(--molduras), 0 32px 50px -16px rgba(0, 0, 0, 0.95); }
+}
+.g-frame:focus-visible { outline: 2px solid var(--ocre-claro); outline-offset: 16px; }
 .g-frame.is-dragging {
   cursor: grabbing; transform: scale(1.07) rotate(0deg);
-  box-shadow: 0 24px 50px rgba(0, 0, 0, 0.9), 0 0 30px rgba(139, 0, 0, 0.65);
+  box-shadow: var(--molduras), 0 44px 60px -20px rgba(0, 0, 0, 0.95);
   transition: transform 0.2s, box-shadow 0.2s;
 }
 
-/* Entrada: las obras "caen" sobre el lienzo una por una */
+/* Volutas doradas en las cuatro esquinas */
+.g-orn {
+  position: absolute; inset: -20px; z-index: 2; pointer-events: none;
+  background: var(--esq-1) left top / 34px no-repeat, var(--esq-2) right top / 34px no-repeat,
+              var(--esq-3) right bottom / 34px no-repeat, var(--esq-4) left bottom / 34px no-repeat;
+  filter: drop-shadow(0 2px 2px rgba(0, 0, 0, 0.6));
+}
+
+/* ---------- Foco de museo sobre cada marco ---------- */
+/* Haz de luz (la bombilla queda a 62px del borde superior de esta capa) */
+.g-frame::before {
+  content: ''; position: absolute; z-index: -1; pointer-events: none;
+  top: -80px; left: -55%; right: -55%; height: calc(100% + 60px);
+  background:
+    radial-gradient(ellipse 20% 8% at 50% 62px, rgba(var(--luz), 0.8), transparent 100%),
+    radial-gradient(ellipse 58% 60% at 50% 62px, rgba(var(--luz), 0.34), rgba(var(--luz), 0.1) 55%, transparent 80%),
+    conic-gradient(from 0deg at 50% 62px, transparent 0 140deg, rgba(var(--luz), 0.18) 156deg 204deg, transparent 220deg);
+  -webkit-mask-image: linear-gradient(transparent 0, #000 58px, #000 40%, transparent 96%), linear-gradient(90deg, transparent, #000 22%, #000 78%, transparent);
+  -webkit-mask-composite: source-in;
+  mask-image: linear-gradient(transparent 0, #000 58px, #000 40%, transparent 96%), linear-gradient(90deg, transparent, #000 22%, #000 78%, transparent);
+  mask-composite: intersect;
+  opacity: 0.9; transform-origin: 50% 62px;
+  transition: filter 0.6s var(--ease), opacity 0.6s;
+}
+/* La lámpara de latón: pantalla arriba, bombilla, y un brazo que baja hasta el marco */
+.g-frame::after {
+  content: ''; position: absolute; left: 50%; top: -30px; z-index: 3; pointer-events: none;
+  width: 46%; height: 30px; translate: -50% 0; transform-origin: 50% 100%;
+  background:
+    linear-gradient(180deg, #F4D998, #A8762A 55%, #3E2A0C) 50% 0 / 100% 7px no-repeat,
+    linear-gradient(rgba(255, 240, 214, 0.98), rgba(255, 240, 214, 0.98)) 50% 7px / 84% 2px no-repeat,
+    linear-gradient(90deg, #3E2A0C, #C89A4B, #3E2A0C) 50% 100% / 3px 22px no-repeat;
+  filter: drop-shadow(0 2px 3px rgba(0, 0, 0, 0.7)) drop-shadow(0 4px 10px rgba(var(--luz), 0.75));
+}
+@media (hover: hover) {
+  .g-frame:hover::before { filter: brightness(1.35); }
+}
 @media (prefers-reduced-motion: no-preference) {
-  .g-frame.enter { animation: cae 0.9s cubic-bezier(.2, .9, .3, 1.2) both; animation-delay: var(--delay, 0ms); }
+  /* las lámparas se encienden una por una, después de que cada obra cae en su lugar */
+  .g-frame::before { animation: g-enciende 1.6s linear calc(var(--delay, 0ms) + 0.8s) both; }
+  .g-frame.enter::after { animation: g-lampara 1.6s linear calc(var(--delay, 0ms) + 0.8s) both; }
+  @keyframes g-enciende {
+    0% { opacity: 0; } 8% { opacity: 0.7; } 12% { opacity: 0.08; } 20% { opacity: 0.8; }
+    24% { opacity: 0.2; } 34% { opacity: 1; } 100% { opacity: 0.9; }
+  }
+  @keyframes g-lampara { 0%, 10% { filter: drop-shadow(0 2px 3px rgba(0, 0, 0, 0.7)); } 34%, 100% { filter: drop-shadow(0 2px 3px rgba(0, 0, 0, 0.7)) drop-shadow(0 4px 10px rgba(var(--luz), 0.75)); } }
+  /* al arrastrar una obra, su lámpara se balancea */
+  .g-frame.is-dragging::after { animation: balanceo 0.55s ease-in-out infinite alternate; }
+  @keyframes balanceo { from { rotate: -9deg; } to { rotate: 9deg; } }
+
+  /* Entrada: las obras se posan sobre el muro una por una */
+  .g-frame.enter { animation: cae 1s cubic-bezier(.2, .8, .3, 1.05) both; animation-delay: var(--delay, 0ms); }
   @keyframes cae {
-    from { opacity: 0; transform: translateY(-120px) rotate(calc(var(--rot, 0deg) * -3)) scale(0.7); }
+    from { opacity: 0; transform: translateY(-60px) rotate(calc(var(--rot, 0deg) * -2)) scale(0.85); }
     to { opacity: 1; transform: rotate(var(--rot, 0deg)); }
   }
 }
 
-.g-img-box { position: relative; overflow: hidden; background: #000; border: 1px solid rgba(255, 255, 255, 0.1); }
+.g-img-box { position: relative; overflow: hidden; background: #120C09; border: 1px solid rgba(227, 185, 105, 0.5); }
 .g-img-box img { width: 100%; height: auto; display: block; pointer-events: none; }
 .g-caption { margin-top: 7px; text-align: center; }
-.g-caption-title { font: 700 0.8rem/1.3 var(--font); color: var(--oro-claro); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.g-caption-sub { font-size: 0.68rem; color: #a0a0a0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.g-caption-title { font: italic 600 0.95rem/1.1 var(--serif); color: var(--ocre-claro); padding-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.g-caption-sub { font-size: 0.66rem; line-height: 1.7; letter-spacing: 0.04em; color: rgba(243, 238, 229, 0.66); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .badge-explored {
-  position: absolute; top: -10px; right: -10px; z-index: 2;
+  position: absolute; top: -16px; right: -16px; z-index: 4;
   display: flex; align-items: center; gap: 3px;
-  font: 700 0.62rem var(--font); color: #fff; background: #8b0000;
-  padding: 3px 7px; border-radius: 10px; border: 1px solid var(--oro);
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.6);
+  font: 700 0.58rem var(--font); letter-spacing: 0.14em; text-transform: uppercase; color: #1A120B; background: var(--ocre-claro);
+  padding: 4px 8px; box-shadow: 0 4px 10px rgba(0, 0, 0, 0.6);
 }
-.g-empty { position: absolute; top: 45%; left: 0; right: 0; text-align: center; color: #888; letter-spacing: 0.3em; font-weight: 700; }
+.g-empty { position: absolute; top: 45%; left: 0; right: 0; text-align: center; color: var(--ocre-claro); letter-spacing: 0.3em; font: italic 400 1.4rem var(--serif); }
+
+/* ---------- Modo linterna: se apagan las lámparas y solo ilumina el cursor ---------- */
+.page-gallery.lights-off .g-frame::before { opacity: 0 !important; }
+.page-gallery.lights-off .g-frame::after { filter: drop-shadow(0 2px 3px rgba(0, 0, 0, 0.7)) !important; }
+.page-gallery.lights-off .room-light {
+  z-index: 44; opacity: 1; mix-blend-mode: normal;
+  background: radial-gradient(circle 210px at var(--lx, 50%) var(--ly, 45%), rgba(var(--luz), 0.06) 0, rgba(var(--luz), 0.03) 45%, rgba(5, 4, 3, 0.95) 100%);
+}
 
 /* ---------- Barra flotante de herramientas ---------- */
 .toolbar-container {
   position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); z-index: 60;
-  display: flex; align-items: center; gap: 10px;
-  background: rgba(18, 18, 18, 0.9); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
-  border: 1px solid rgba(212, 175, 55, 0.3); border-radius: 50px; padding: 8px 12px 8px 10px;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.8); max-width: calc(100vw - 20px); overflow-x: auto; scrollbar-width: none;
+  display: flex; align-items: center; gap: 6px;
+  background: rgba(14, 11, 9, 0.95);
+  border: 1px solid rgba(227, 185, 105, 0.26); padding: 7px 8px 7px 16px;
+  box-shadow: 0 18px 40px -18px rgba(0, 0, 0, 0.9); max-width: calc(100vw - 20px); overflow-x: auto; scrollbar-width: none;
 }
 .toolbar-container::-webkit-scrollbar { display: none; }
 .counter-pill {
-  font: 700 0.8rem var(--font); color: var(--oro); white-space: nowrap;
-  background: rgba(139, 0, 0, 0.3); border: 1px solid #8b0000; padding: 6px 14px; border-radius: 20px;
+  font: 600 0.72rem var(--font); letter-spacing: 0.06em; color: var(--ocre-claro); white-space: nowrap;
+  padding: 6px 14px 6px 0; margin-right: 4px; border-right: 1px solid rgba(227, 185, 105, 0.22);
 }
 .tool-btn, .tool-select select {
   display: flex; align-items: center; gap: 7px; white-space: nowrap;
-  font: 600 0.82rem var(--font); color: #e0e0e0;
-  background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.15);
-  padding: 8px 15px; border-radius: 20px; transition: all 0.25s ease;
+  font: 600 0.68rem var(--font); letter-spacing: 0.14em; text-transform: uppercase; color: var(--hueso);
+  background: transparent; border: 1px solid transparent; border-radius: 0;
+  padding: 9px 13px; transition: background-color 0.25s, color 0.25s, border-color 0.25s;
 }
-.tool-btn:hover, .tool-btn.active { background: #8b0000; color: #fff; border-color: var(--oro); box-shadow: 0 0 12px rgba(139, 0, 0, 0.55); }
-.tool-select select { appearance: none; -webkit-appearance: none; cursor: pointer; padding-right: 30px;
-  background-image: linear-gradient(45deg, transparent 50%, #d4af37 50%), linear-gradient(135deg, #d4af37 50%, transparent 50%);
+.tool-btn:hover { border-color: rgba(227, 185, 105, 0.45); }
+.tool-btn.active { background: var(--ocre-claro); color: #1A120B; border-color: var(--ocre-claro); }
+.tool-select select { appearance: none; -webkit-appearance: none; cursor: pointer; padding-right: 30px; border-color: rgba(227, 185, 105, 0.3);
+  background-image: linear-gradient(45deg, transparent 50%, #E3B969 50%), linear-gradient(135deg, #E3B969 50%, transparent 50%);
   background-position: calc(100% - 15px) 52%, calc(100% - 10px) 52%; background-size: 5px 5px; background-repeat: no-repeat; }
-.tool-select select option { background: #141414; color: #fff; }
+.tool-select select option { background: #120D0A; color: var(--hueso); }
 
-/* ---------- Modal de la obra ---------- */
+/* ---------- Modal de la obra (cédula ampliada, sala oscura) ---------- */
 .g-modal {
   position: fixed; inset: 0; z-index: 150;
   display: flex; align-items: center; justify-content: center; padding: 20px;
-  background: rgba(5, 5, 5, 0.92); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
-  animation: visor-in 0.35s ease both;
+  background: rgba(5, 4, 3, 0.88);
+  animation: visor-in 0.4s ease both;
 }
 .g-modal-card {
-  position: relative; width: 100%; max-width: 1060px; max-height: 90vh; overflow-y: auto;
+  position: relative; width: 100%; max-width: 1080px; max-height: 90vh; overflow-y: auto;
   display: grid; grid-template-columns: 1.05fr 1fr;
-  background: #141414; border: 1px solid rgba(212, 175, 55, 0.3); border-radius: 14px;
-  box-shadow: 0 25px 70px rgba(0, 0, 0, 0.9), 0 0 60px rgba(139, 0, 0, 0.2);
-  animation: modal-in 0.45s cubic-bezier(.2, .9, .3, 1.1) both;
+  background: var(--damasco), #120D0A; color: var(--hueso); border: 1px solid rgba(227, 185, 105, 0.3);
+  box-shadow: 0 40px 90px -30px rgba(0, 0, 0, 0.95);
+  animation: modal-in 0.55s var(--ease) both;
 }
-@keyframes modal-in { from { opacity: 0; transform: translateY(24px) scale(0.97); } }
+@keyframes modal-in { from { opacity: 0; transform: translateY(24px) scale(0.98); } }
 .g-close {
-  position: absolute; top: 14px; right: 14px; z-index: 20; width: 38px; height: 38px; border-radius: 50%;
-  display: grid; place-items: center; color: #c4c4c4; background: rgba(0, 0, 0, 0.6); border: 1px solid #3a3a3a; transition: color 0.2s, border-color 0.2s;
+  position: absolute; top: 14px; right: 14px; z-index: 20; width: 38px; height: 38px;
+  display: grid; place-items: center; color: var(--hueso); background: rgba(10, 8, 7, 0.9); border: 1px solid rgba(227, 185, 105, 0.3); transition: color 0.2s, border-color 0.2s;
 }
-.g-close:hover { color: #fff; border-color: var(--oro); }
+.g-close:hover { color: var(--ocre-claro); border-color: var(--ocre-claro); }
 
 .g-modal-media {
   position: relative; display: flex; align-items: center; justify-content: center;
-  padding: 26px; min-height: 320px; overflow: hidden;
-  background: #080808; border-right: 1px solid rgba(255, 255, 255, 0.08);
+  padding: 44px 36px 52px; min-height: 320px; overflow: hidden;
+  /* la obra ampliada también tiene su foco */
+  background: radial-gradient(ellipse 60% 55% at 50% 0%, rgba(var(--luz), 0.2), transparent 70%), #070504;
+  border-right: 1px solid rgba(227, 185, 105, 0.18);
 }
-.g-modal-img { max-width: 100%; max-height: 66vh; width: auto; border-radius: 4px; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.8); cursor: zoom-in; }
+.g-modal-img { max-width: 100%; max-height: 62vh; width: auto; box-shadow: var(--molduras), 0 30px 50px -20px rgba(0, 0, 0, 0.95); cursor: zoom-in; }
 .zoom-lens {
   position: absolute; z-index: 10; width: 150px; height: 150px; border-radius: 50%; display: none; pointer-events: none;
-  border: 2px solid var(--oro); box-shadow: 0 0 20px rgba(0, 0, 0, 0.85), inset 0 0 12px rgba(0, 0, 0, 0.5);
-  background-repeat: no-repeat; background-color: #000;
+  border: 2px solid var(--ocre-claro); box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.5), 0 14px 30px rgba(0, 0, 0, 0.6);
+  background-repeat: no-repeat; background-color: #120D0A;
 }
 .zoom-hint, .g-full {
-  position: absolute; bottom: 12px; display: flex; align-items: center; gap: 6px;
-  font: 600 0.7rem var(--font); color: #d1d5db; background: rgba(0, 0, 0, 0.8);
-  border: 1px solid #2a2a2a; padding: 6px 12px; border-radius: 999px;
+  position: absolute; bottom: 12px; display: flex; align-items: center; gap: 7px;
+  font: 600 0.62rem var(--font); letter-spacing: 0.12em; text-transform: uppercase; color: var(--hueso); background: rgba(10, 8, 7, 0.88);
+  border: 1px solid rgba(227, 185, 105, 0.26); padding: 7px 12px;
 }
 .zoom-hint { left: 12px; pointer-events: none; }
-.zoom-hint svg { color: var(--oro); }
+.zoom-hint svg, .g-full svg { color: var(--ocre-claro); }
 .g-full { right: 12px; cursor: pointer; transition: border-color 0.2s, color 0.2s; }
-.g-full:hover { color: #fff; border-color: var(--oro); }
+.g-full:hover { color: var(--ocre-claro); border-color: var(--ocre-claro); }
 
-.g-modal-content { padding: 30px; display: flex; flex-direction: column; justify-content: space-between; gap: 20px; }
-.g-meta-row { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
-.g-movement { font: 700 0.64rem var(--font); letter-spacing: 0.12em; text-transform: uppercase; color: #f87171; background: rgba(69, 10, 10, 0.8); border: 1px solid rgba(153, 27, 27, 0.6); padding: 3px 9px; border-radius: 4px; }
+.g-modal-content { padding: 36px 34px 30px; display: flex; flex-direction: column; justify-content: space-between; gap: 22px; }
+.g-meta-row { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; }
+.g-movement { font: 600 0.64rem var(--font); letter-spacing: 0.2em; text-transform: uppercase; color: var(--ocre-claro); padding-right: 12px; border-right: 1px solid rgba(243, 238, 229, 0.2); }
 .g-movement:empty { display: none; }
-.g-year { font-size: 0.8rem; color: #9ca3af; }
-.g-title { font: 900 clamp(1.5rem, 2.6vw, 2.1rem)/1.1 var(--font); text-transform: uppercase; color: #fdf3d8; margin-bottom: 4px; padding-right: 40px; }
-.g-artist { font-size: 0.9rem; font-weight: 600; color: rgba(212, 175, 55, 0.9); margin-bottom: 18px; }
+.g-year { font-size: 0.78rem; color: rgba(243, 238, 229, 0.68); }
+.g-title { font: 400 clamp(1.8rem, 2.8vw, 2.5rem)/1.08 var(--serif); color: var(--hueso); margin-bottom: 8px; padding-right: 40px; }
+.g-artist { font: 600 0.68rem var(--font); letter-spacing: 0.2em; text-transform: uppercase; color: var(--malva-claro); margin-bottom: 22px; }
 
-.audio-player-card { display: flex; align-items: center; gap: 12px; padding: 14px; margin-bottom: 20px; border-radius: 10px; background: rgba(28, 25, 23, 0.9); border: 1px solid rgba(120, 53, 15, 0.45); }
-.audio-play-btn { flex: none; width: 42px; height: 42px; border-radius: 50%; display: grid; place-items: center; color: #fff; background: #991b1b; box-shadow: 0 8px 18px -4px rgba(139, 0, 0, 0.7); transition: background-color 0.2s, transform 0.2s; }
-.audio-play-btn:hover { background: #b91c1c; transform: scale(1.06); }
+.audio-player-card { display: flex; align-items: center; gap: 14px; padding: 14px 0; margin-bottom: 22px; border-block: 1px solid rgba(243, 238, 229, 0.12); }
+.audio-play-btn { flex: none; width: 42px; height: 42px; border-radius: 50%; display: grid; place-items: center; color: #1A120B; background: var(--ocre-claro); transition: background-color 0.25s, color 0.25s; }
+.audio-play-btn:hover, .audio-play-btn.playing { background: var(--morado); color: var(--hueso); }
 .audio-play-btn .i-pause, .audio-play-btn.playing .i-play { display: none; }
 .audio-play-btn.playing .i-pause { display: block; }
 .audio-info { flex: 1; min-width: 0; }
 .audio-top { display: flex; justify-content: space-between; align-items: center; gap: 8px; margin-bottom: 6px; }
-.audio-label { display: flex; align-items: center; gap: 5px; font-size: 0.78rem; font-weight: 700; color: #fde68a; }
-.audio-label svg { color: #ef4444; }
-.audio-status { font-size: 0.66rem; color: #9ca3af; white-space: nowrap; }
+.audio-label { display: flex; align-items: center; gap: 6px; font: 600 0.66rem var(--font); letter-spacing: 0.14em; text-transform: uppercase; color: var(--hueso); }
+.audio-label svg { color: var(--ocre-claro); }
+.audio-status { font-size: 0.68rem; color: rgba(243, 238, 229, 0.62); white-space: nowrap; }
 .eq { display: flex; align-items: flex-end; gap: 3px; height: 16px; }
-.eq i { width: 3px; height: 3px; background: var(--oro); border-radius: 2px; animation: eq 1s ease-in-out infinite alternate; animation-play-state: paused; }
+.eq i { width: 2px; height: 3px; background: var(--ocre); animation: eq 1s ease-in-out infinite alternate; animation-play-state: paused; }
 .eq i:nth-child(2n) { animation-delay: 0.25s; } .eq i:nth-child(3n) { animation-delay: 0.4s; } .eq i:nth-child(5n) { animation-delay: 0.1s; }
-.eq.playing i { animation-play-state: running; }
+.eq.playing i { animation-play-state: running; background: var(--malva-claro); }
 @keyframes eq { from { height: 3px; } to { height: 16px; } }
 
-.g-tabs { display: flex; flex-wrap: wrap; gap: 6px 20px; border-bottom: 1px solid #292524; margin-bottom: 16px; }
-.g-tab { padding-bottom: 8px; font: 600 0.88rem var(--font); color: #a8a8a8; border-bottom: 2px solid transparent; margin-bottom: -1px; transition: color 0.2s; }
-.g-tab:hover { color: #fff; }
-.g-tab.active { color: var(--oro); border-bottom-color: #b3122a; }
-.g-tab-content { font-size: 0.93rem; line-height: 1.75; color: #d6d3d1; min-height: 130px; white-space: pre-line; }
-.g-tab-content strong { color: #fbbf24; font-weight: 700; }
+.g-tabs { display: flex; flex-wrap: wrap; gap: 4px 22px; border-bottom: 1px solid rgba(243, 238, 229, 0.14); margin-bottom: 18px; }
+.g-tab { padding: 8px 0; font: 600 0.66rem var(--font); letter-spacing: 0.16em; text-transform: uppercase; color: rgba(243, 238, 229, 0.6); border-bottom: 1px solid transparent; margin-bottom: -1px; transition: color 0.2s, border-color 0.2s; }
+.g-tab:hover { color: var(--hueso); }
+.g-tab.active { color: var(--hueso); border-bottom-color: var(--ocre-claro); }
+.g-tab-content { font-size: 0.95rem; line-height: 1.8; color: rgba(243, 238, 229, 0.86); min-height: 130px; white-space: pre-line; animation: aparece 0.5s var(--ease) both; }
+.g-tab-content strong { color: var(--ocre-claro); font-weight: 600; }
 
-.g-modal-foot { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; padding-top: 16px; border-top: 1px solid #292524; }
-.g-location { display: flex; align-items: center; gap: 6px; font-size: 0.78rem; color: #8a8a8a; }
-.g-location svg { color: #d97706; }
+.g-modal-foot { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; padding-top: 18px; border-top: 1px solid rgba(243, 238, 229, 0.14); }
+.g-location { display: flex; align-items: center; gap: 7px; font-size: 0.78rem; color: rgba(243, 238, 229, 0.68); }
+.g-location svg { color: var(--ocre-claro); }
 .g-nav { display: flex; gap: 8px; }
-.modal-nav-btn { font: 600 0.8rem var(--font); color: #d1d5db; background: #292524; padding: 8px 14px; border-radius: 6px; transition: background-color 0.2s, color 0.2s; }
-.modal-nav-btn:hover { background: #8b0000; color: #fff; }
+.modal-nav-btn { font: 600 0.66rem var(--font); letter-spacing: 0.14em; text-transform: uppercase; color: var(--hueso); border: 1px solid rgba(227, 185, 105, 0.3); padding: 9px 14px; transition: background-color 0.25s, color 0.25s, border-color 0.25s; }
+.modal-nav-btn:hover { background: var(--ocre-claro); color: #1A120B; border-color: var(--ocre-claro); }
 
 /* el visor de pantalla completa va encima del modal */
 .page-gallery .viewer { z-index: 300; }
 
 @media (max-width: 860px) {
-  .nav-boundary-line { top: 72px; }
-  .instruction-banner { top: 86px; font-size: 0.7rem; }
+  .instruction-banner { top: 86px; font-size: 0.68rem; }
   .g-modal { padding: 10px; align-items: flex-end; }
   .g-modal-card { grid-template-columns: 1fr; max-height: 94vh; }
-  .g-modal-media { border-right: 0; border-bottom: 1px solid rgba(255, 255, 255, 0.08); padding: 18px; min-height: 0; }
-  .g-modal-img { max-height: 46vh; }
-  .g-modal-content { padding: 22px; }
-  .toolbar-container { bottom: 12px; gap: 6px; }
-  .tool-btn, .tool-select select { padding: 8px 12px; font-size: 0.78rem; }
+  .g-modal-media { border-right: 0; border-bottom: 1px solid rgba(227, 185, 105, 0.18); padding: 32px 24px; min-height: 0; }
+  .g-modal-img { max-height: 44vh; }
+  .g-modal-content { padding: 24px 22px; }
+  .toolbar-container { bottom: 12px; gap: 4px; padding-left: 12px; }
+  .tool-btn, .tool-select select { padding: 8px 10px; font-size: 0.64rem; }
   .hide-sm, .zoom-hint { display: none !important; }
   .show-sm { display: inline; }
-  .counter-pill { padding: 6px 10px; font-size: 0.74rem; }
+  .counter-pill { padding-right: 10px; font-size: 0.68rem; }
+  .g-orn { inset: -16px; background-size: 26px, 26px, 26px, 26px; }
 }
 @media (prefers-reduced-motion: reduce) { .g-frame.moving { transition: none; } }
 

@@ -1,6 +1,8 @@
 // =====================================================================
 // GALERÍA — Lienzo libre (diseño original del proyecto)
-// - Las obras aparecen esparcidas en marcos dorados y se pueden arrastrar
+// - Las obras aparecen esparcidas en marcos dorados barrocos, cada una con su
+//   lámpara de museo, y se pueden arrastrar
+// - Botón "Linterna": apaga las lámparas y solo ilumina el cursor
 // - Botones: "Esparcir" (desordena) y "Ordenar en grilla"
 // - Al tocar una obra se abre el modal con lupa, audioguía y su historia
 // Sin librerías externas y sin innerHTML con datos (más seguro).
@@ -36,7 +38,7 @@
 
   // ---------- medidas ----------
   const frameW = () => (innerWidth < 600 ? 136 : innerWidth < 1000 ? 165 : 195);
-  const navLimit = () => (topbar ? topbar.offsetHeight : 76) + 22; // las obras no suben más que esto
+  const navLimit = () => (topbar ? topbar.offsetHeight : 76) + 34; // las obras (y su lámpara) no suben más que esto
   const toolbarSpace = 120; // espacio abajo para la barra flotante
   // alto aproximado de un marco según la forma de su obra (para acomodarlos sin encimarse)
   function frameH(a, fw) {
@@ -66,7 +68,9 @@
     const cap = el('div', 'g-caption');
     cap.append(el('div', 'g-caption-title', a.title));
     cap.append(el('div', 'g-caption-sub', [a.year, a.category].filter(Boolean).join(' · ') || c.artist_name || ''));
-    f.append(box, cap);
+    const orn = el('span', 'g-orn'); // volutas doradas de las esquinas (solo decoración)
+    orn.setAttribute('aria-hidden', 'true');
+    f.append(box, cap, orn);
 
     makeDraggable(f);
     f.addEventListener('keydown', (e) => {
@@ -111,7 +115,7 @@
 
   // Grilla: columnas centradas; cada obra va a la columna más corta
   function gridLayout(items, fw, W) {
-    const gap = innerWidth < 600 ? 16 : 28;
+    const gap = innerWidth < 600 ? 34 : 56; // espacio para las molduras doradas y la lámpara
     const cols = Math.max(2, Math.min(6, Math.floor((W - 32 + gap) / (fw + gap))));
     const startX = Math.max(16, (W - (cols * (fw + gap) - gap)) / 2);
     const top0 = navLimit() + (innerWidth < 600 ? 34 : 50);
@@ -235,6 +239,19 @@
     const sel = $('filterSelect');
     cats.forEach((k) => { const o = el('option', null, k); o.value = k; sel.append(o); });
     sel.addEventListener('change', () => { filter = sel.value; render(); });
+  }
+
+  // Linterna: apaga las lámparas de la sala; la luz sigue al cursor (solo con mouse)
+  const btnLamp = $('btnLamp');
+  if (btnLamp && matchMedia('(hover: hover) and (pointer: fine)').matches && !reduceMotion) {
+    btnLamp.hidden = false;
+    btnLamp.addEventListener('click', () => {
+      const on = !document.body.classList.contains('lights-off');
+      document.body.classList.toggle('lights-off', on);
+      btnLamp.classList.toggle('active', on);
+      btnLamp.setAttribute('aria-pressed', String(on));
+      document.querySelector('.room-light')?.classList.add('on');
+    });
   }
 
   function updateCounter() {
